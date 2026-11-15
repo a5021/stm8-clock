@@ -1,0 +1,10 @@
+# Build output
+build/
+
+# Prebuilt tools (see README, "Requirements")
+tools/bin/
+tools/zadig.exe
+
+# Editor and OS noise
+*.swp
+Thumbs.db
