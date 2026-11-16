@@ -8,9 +8,11 @@ HDR      := $(wildcard src/*.h)
 
 all: $(BUILD)/clock.ihx
 
-$(BUILD)/%.rel: src/%.c $(HDR)
-	mkdir -p $(BUILD)
+$(BUILD)/%.rel: src/%.c $(HDR) | $(BUILD)
 	$(SDCC) $(CFLAGS) -c -o $@ $<
+
+$(BUILD):
+	mkdir -p $(BUILD)
 
 $(BUILD)/clock.ihx: $(REL)
 	$(SDCC) $(LDFLAGS) -o $@ $(REL)

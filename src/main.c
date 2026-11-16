@@ -71,12 +71,10 @@ static void show_temp(int16_t tenths)
     uint8_t intg;
     uint8_t frac;
 
+    lcd_clear();
     if (tenths < 0) {
         tenths = (int16_t)-tenths;
-        lcd_clear();
         lcd_putc(pos++, '-', false);
-    } else {
-        lcd_clear();
     }
     if (tenths > 999)
         tenths = 999;

@@ -1,32 +1,8 @@
 #include "time_conv.h"
 
-/* Julian Day Number offset for 1970-01-01 (Unix epoch), used by the
- * Fliegel–Van Flandern day-number <-> Gregorian date conversion. */
 #define JD0 2440588u
 
-/* Convert calendar to Unix time (seconds since 1970-01-01 00:00:00). */
-uint32_t time_to_unixtime(const time_struct_t *t)
-{
-    uint8_t a = (uint8_t)((14 - t->month) / 12);
-    uint16_t y = (uint16_t)(t->year + 4800 - a);
-    uint8_t m = (uint8_t)(t->month + (12 * a) - 3);
-    uint32_t counter = t->day;
-
-    counter += (uint32_t)(153 * m + 2) / 5;
-    counter += 365UL * y;
-    counter += y / 4;
-    counter -= y / 100;
-    counter += y / 400;
-    counter -= 32045;
-    counter -= JD0;
-    counter *= 86400UL;
-    counter += (uint32_t)t->hour * 3600;
-    counter += (uint32_t)t->minute * 60;
-    counter += t->second;
-    return counter;
-}
-
-/* Convert Unix time back to calendar fields. */
+/* Unix time -> Gregorian calendar, Fliegel–Van Flandern day-number algorithm. */
 void unixtime_to_time(uint32_t utime, time_struct_t *t)
 {
     uint32_t ace, b, d, m;

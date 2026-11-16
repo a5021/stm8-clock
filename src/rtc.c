@@ -67,7 +67,7 @@ static bool clock_setup(void)
     return false;
 }
 
-bool rtc_init(void)
+void rtc_init(void)
 {
     bool lse = clock_setup();
     time_struct_t t;
@@ -102,7 +102,6 @@ bool rtc_init(void)
 
     init_mode(false);
     lock();
-    return lse;
 }
 
 void rtc_get(time_struct_t *t)
