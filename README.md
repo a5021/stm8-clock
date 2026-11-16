@@ -6,8 +6,8 @@ time for 3 s, then the internal chip temperature for 3 s, alternating. The time
 is set from a PC over SWIM by a small Python script — no buttons, no wiring.
 
 ```
-HH.MM.SS     ->  12.34.56   (dots: only positions 1..4 have COL/DP segments)
- 23.5C       ->  temperature, one decimal
+HH.MM.SS     ->  12.34.56   (dots on positions 2 and 4)
+ 25.5C       ->  temperature, dot fixed on position 3
 ```
 
 Written in C for SDCC, no interrupts: the RTC seconds are polled and `sec % 6`
@@ -24,9 +24,9 @@ selects which value is on the glass.
 | Temperature | internal sensor of ADC1 against the Vrefint reference |
 | Programmer | the board's own ST-Link V1 (`0483:3744`) over its USB port |
 
-Only positions 1..4 of the glass drive COL/DP, so the temperature puts the last
-integer digit on position 2 (`25.5C` starts at position 1, `5.0C` at position
-2). A negative two digit value has no room for the fraction (`-15C`).
+The glass has decimal points on positions 1..4 (not 5..6). The temperature
+always puts the point on position 3: `25.5C`, `-0.5C`, `-15.3C`. The sign takes
+position 1 and `C` sits on position 5; at most 99.9 C / -99.9 C fits.
 
 ## Layout
 

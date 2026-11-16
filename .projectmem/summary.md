@@ -1,6 +1,6 @@
 # projectmem - STM8_CLOCK
 
-_Last updated: 2026-11-15_
+_Last updated: 2026-11-16_
 
 ## Project purpose
 Bare-metal firmware for the STM8L-DISCOVERY board (MB915B, STM8L152C6T6) that turns it into a desk clock with a thermometer: the 14-segment glass shows the time for 3 s, then the internal chip temperature for 3 s, alternating. The time is set from a PC over SWIM by a small Python script — no…
@@ -9,7 +9,7 @@ Bare-metal firmware for the STM8L-DISCOVERY board (MB915B, STM8L152C6T6) that tu
 - No issues logged yet.
 
 ## Decisions
-- No decisions logged yet.
+- Refactor: refactor: drop dead code and simplify build and display [src/main.c]
 
 ## Notes
 - chore: build rules for SDCC and ignore generated output

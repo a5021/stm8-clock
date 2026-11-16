@@ -67,15 +67,12 @@ static void show_time(const time_struct_t *t)
 
 static void show_temp(int16_t tenths)
 {
-    uint8_t pos = 1;
+    bool negative = (tenths < 0);
     uint8_t intg;
     uint8_t frac;
 
-    lcd_clear();
-    if (tenths < 0) {
+    if (negative)
         tenths = (int16_t)-tenths;
-        lcd_putc(pos++, '-', false);
-    }
     if (tenths > 999)
         tenths = 999;
 
@@ -83,23 +80,18 @@ static void show_temp(int16_t tenths)
     frac = (uint8_t)(tenths % 10);
 
     /*
-     * Decimal points only exist on positions 2 and 4, so the digit in front of
-     * the fraction has to land on position 2.  That leaves no room for the
-     * fraction together with a sign and a two digit integer ("-15.3C"), which
-     * shows without it.
+     * Fixed layout: the decimal point always sits on position 3, so the dot
+     * never moves between the time and temperature screens.  Position 5 holds
+     * the "C" (positions 5 and 6 have no dot segment on this glass).
      */
-    if (intg >= 10) {
-        if (pos > 1) {                      /* -15C */
-            lcd_putc(pos++, (char)('0' + intg / 10), false);
-            lcd_putc(pos++, (char)('0' + intg % 10), false);
-            lcd_putc(pos, 'C', false);
-            return;
-        }
-        lcd_putc(pos++, (char)('0' + intg / 10), false);   /* 25.5C */
-    }
-    lcd_putc(pos++, (char)('0' + intg % 10), true);
-    lcd_putc(pos++, (char)('0' + frac), false);
-    lcd_putc(pos, 'C', false);
+    lcd_clear();
+    if (negative)
+        lcd_putc(1, '-', false);
+    if (intg >= 10)
+        lcd_putc(2, (char)('0' + intg / 10), false);
+    lcd_putc(3, (char)('0' + intg % 10), true);
+    lcd_putc(4, (char)('0' + frac), false);
+    lcd_putc(5, 'C', false);
 }
 
 void main(void)
