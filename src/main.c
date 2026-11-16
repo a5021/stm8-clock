@@ -125,8 +125,10 @@ void main(void)
         rtc_get(&t);
 
         if ((uint8_t)(sec % 6) < 3) {
+            /* first 3 s of each 6 s cycle: time */
             show_time(&t);
         } else {
+            /* remaining 3 s: temperature */
             temp = temp_read_tenths();
             show_temp(temp);
         }
