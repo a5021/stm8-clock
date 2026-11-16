@@ -1,6 +1,6 @@
 SDCC     ?= sdcc
 BUILD    := build
-CFLAGS   := -mstm8 --std-c99 --opt-code-size --max-allocs-per-node 50000 -Isrc
+CFLAGS   := -mstm8 --std-c99 --opt-code-size --max-allocs-per-node 20000 -Isrc
 LDFLAGS  := -mstm8 -Wl-bDATA=0x0008
 SRC      := $(wildcard src/*.c)
 REL      := $(patsubst src/%.c,$(BUILD)/%.rel,$(SRC))

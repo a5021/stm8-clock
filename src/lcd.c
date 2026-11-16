@@ -18,6 +18,71 @@ static const uint16_t letter_map[26] = {
     0xAF00, 0x0411, 0x5B00, 0x18C0, 0x5A84, 0x00C6, 0x0052, 0x05C0
 };
 
+/*
+ * One entry per pair of segment bits of a character, copied from the ST
+ * glass driver: keep is the mask of LCD RAM bits the entry does not touch,
+ * d0/d1 are the destination bits in that RAM byte, s0/s1 the source bits in
+ * the 16 bit character code.  A source bit of 0x0000 means "no second pair"
+ * (positions 5 and 6 lack some COL/DP segments).
+ */
+typedef struct {
+    uint8_t ram;
+    uint8_t keep;
+    uint8_t d0, d1;
+    uint16_t s0, s1;
+} lcd_map_t;
+
+static const lcd_map_t lcd_map[48] = {
+  {0, 0xFC, 0x01, 0x02, 0x1000, 0x2000}, /* p1 RAM0 */
+  {2, 0x3F, 0x40, 0x80, 0x4000, 0x8000}, /* p1 RAM2 */
+  {3, 0xCF, 0x10, 0x20, 0x0100, 0x0200}, /* p1 RAM3 */
+  {6, 0xF3, 0x04, 0x08, 0x0400, 0x0800}, /* p1 RAM6 */
+  {7, 0xFC, 0x01, 0x02, 0x0010, 0x0020}, /* p1 RAM7 */
+  {9, 0x3F, 0x40, 0x80, 0x0040, 0x0080}, /* p1 RAM9 */
+  {10, 0xCF, 0x10, 0x20, 0x0004, 0x0008}, /* p1 RAM10 */
+  {13, 0xF3, 0x04, 0x08, 0x0001, 0x0002}, /* p1 RAM13 */
+  {0, 0xF3, 0x04, 0x08, 0x1000, 0x2000}, /* p2 RAM0 */
+  {2, 0xCF, 0x10, 0x20, 0x4000, 0x8000}, /* p2 RAM2 */
+  {3, 0x3F, 0x40, 0x80, 0x0100, 0x0200}, /* p2 RAM3 */
+  {6, 0xFC, 0x01, 0x02, 0x0400, 0x0800}, /* p2 RAM6 */
+  {7, 0xF3, 0x04, 0x08, 0x0010, 0x0020}, /* p2 RAM7 */
+  {9, 0xCF, 0x10, 0x20, 0x0040, 0x0080}, /* p2 RAM9 */
+  {10, 0x3F, 0x40, 0x80, 0x0004, 0x0008}, /* p2 RAM10 */
+  {13, 0xFC, 0x01, 0x02, 0x0001, 0x0002}, /* p2 RAM13 */
+  {0, 0xCF, 0x10, 0x20, 0x1000, 0x2000}, /* p3 RAM0 */
+  {2, 0xF3, 0x04, 0x08, 0x4000, 0x8000}, /* p3 RAM2 */
+  {4, 0xFC, 0x01, 0x02, 0x0100, 0x0200}, /* p3 RAM4 */
+  {5, 0x3F, 0x40, 0x80, 0x0400, 0x0800}, /* p3 RAM5 */
+  {7, 0xCF, 0x10, 0x20, 0x0010, 0x0020}, /* p3 RAM7 */
+  {9, 0xF3, 0x04, 0x08, 0x0040, 0x0080}, /* p3 RAM9 */
+  {11, 0xFC, 0x01, 0x02, 0x0004, 0x0008}, /* p3 RAM11 */
+  {12, 0x3F, 0x40, 0x80, 0x0001, 0x0002}, /* p3 RAM12 */
+  {0, 0x3F, 0x40, 0x80, 0x1000, 0x2000}, /* p4 RAM0 */
+  {2, 0xFC, 0x01, 0x02, 0x4000, 0x8000}, /* p4 RAM2 */
+  {4, 0xF3, 0x04, 0x08, 0x0100, 0x0200}, /* p4 RAM4 */
+  {5, 0xCF, 0x10, 0x20, 0x0400, 0x0800}, /* p4 RAM5 */
+  {7, 0x3F, 0x40, 0x80, 0x0010, 0x0020}, /* p4 RAM7 */
+  {9, 0xFC, 0x01, 0x02, 0x0040, 0x0080}, /* p4 RAM9 */
+  {11, 0xF3, 0x04, 0x08, 0x0004, 0x0008}, /* p4 RAM11 */
+  {12, 0xCF, 0x10, 0x20, 0x0001, 0x0002}, /* p4 RAM12 */
+  {1, 0xFC, 0x01, 0x02, 0x1000, 0x2000}, /* p5 RAM1 */
+  {1, 0x3F, 0x40, 0x80, 0x4000, 0x8000}, /* p5 RAM1 */
+  {4, 0xCF, 0x10, 0x20, 0x0100, 0x0200}, /* p5 RAM4 */
+  {5, 0xF3, 0x04, 0x08, 0x0400, 0x0800}, /* p5 RAM5 */
+  {8, 0xFE, 0x01, 0x00, 0x0010, 0x0000}, /* p5 RAM8 */
+  {8, 0x3F, 0x40, 0x80, 0x0040, 0x0080}, /* p5 RAM8 */
+  {11, 0xEF, 0x10, 0x00, 0x0004, 0x0000}, /* p5 RAM11 */
+  {12, 0xF3, 0x04, 0x08, 0x0001, 0x0002}, /* p5 RAM12 */
+  {1, 0xF3, 0x04, 0x08, 0x1000, 0x2000}, /* p6 RAM1 */
+  {1, 0xCF, 0x10, 0x20, 0x4000, 0x8000}, /* p6 RAM1 */
+  {4, 0x3F, 0x40, 0x80, 0x0100, 0x0200}, /* p6 RAM4 */
+  {5, 0xFC, 0x01, 0x02, 0x0400, 0x0800}, /* p6 RAM5 */
+  {8, 0xFB, 0x04, 0x00, 0x0010, 0x0000}, /* p6 RAM8 */
+  {8, 0xCF, 0x10, 0x20, 0x0040, 0x0080}, /* p6 RAM8 */
+  {11, 0xBF, 0x40, 0x00, 0x0004, 0x0000}, /* p6 RAM11 */
+  {12, 0xFC, 0x01, 0x02, 0x0001, 0x0002}, /* p6 RAM12 */
+};
+
 static uint16_t char_code(char c)
 {
     if (c >= '0' && c <= '9')
@@ -31,77 +96,23 @@ static uint16_t char_code(char c)
     return 0x0000;
 }
 
-void lcd_put(uint8_t position, uint16_t ch)
+static void lcd_put(uint8_t position, uint16_t ch)
 {
-    uint8_t digit[4];
-    uint8_t i, j;
+    const lcd_map_t *m;
+    uint8_t i;
 
-    for (i = 12, j = 0; j < 4; i -= 4, j++)
-        digit[j] = (uint8_t)((ch >> i) & 0x0F);
+    if (position < 1 || position > 6)
+        return;
 
-    switch (position) {
-    case 1:
-        LCD_RAM(0) = (uint8_t)((LCD_RAM(0) & 0xFC) | (digit[0] & 0x03));
-        LCD_RAM(2) = (uint8_t)((LCD_RAM(2) & 0x3F) | ((digit[0] << 4) & 0xC0));
-        LCD_RAM(3) = (uint8_t)((LCD_RAM(3) & 0xCF) | ((digit[1] << 4) & 0x30));
-        LCD_RAM(6) = (uint8_t)((LCD_RAM(6) & 0xF3) | (digit[1] & 0x0C));
-        LCD_RAM(7) = (uint8_t)((LCD_RAM(7) & 0xFC) | (digit[2] & 0x03));
-        LCD_RAM(9) = (uint8_t)((LCD_RAM(9) & 0x3F) | ((digit[2] << 4) & 0xC0));
-        LCD_RAM(10) = (uint8_t)((LCD_RAM(10) & 0xCF) | ((digit[3] << 2) & 0x30));
-        LCD_RAM(13) = (uint8_t)((LCD_RAM(13) & 0xF3) | ((digit[3] << 2) & 0x0C));
-        break;
-    case 2:
-        LCD_RAM(0) = (uint8_t)((LCD_RAM(0) & 0xF3) | ((digit[0] << 2) & 0x0C));
-        LCD_RAM(2) = (uint8_t)((LCD_RAM(2) & 0xCF) | ((digit[0] << 2) & 0x30));
-        LCD_RAM(3) = (uint8_t)((LCD_RAM(3) & 0x3F) | ((digit[1] << 6) & 0xC0));
-        LCD_RAM(6) = (uint8_t)((LCD_RAM(6) & 0xFC) | ((digit[1] >> 2) & 0x03));
-        LCD_RAM(7) = (uint8_t)((LCD_RAM(7) & 0xF3) | ((digit[2] << 2) & 0x0C));
-        LCD_RAM(9) = (uint8_t)((LCD_RAM(9) & 0xCF) | ((digit[2] << 2) & 0x30));
-        LCD_RAM(10) = (uint8_t)((LCD_RAM(10) & 0x3F) | ((digit[3] << 4) & 0xC0));
-        LCD_RAM(13) = (uint8_t)((LCD_RAM(13) & 0xFC) | (digit[3] & 0x03));
-        break;
-    case 3:
-        LCD_RAM(0) = (uint8_t)((LCD_RAM(0) & 0xCF) | ((digit[0] << 4) & 0x30));
-        LCD_RAM(2) = (uint8_t)((LCD_RAM(2) & 0xF3) | (digit[0] & 0x0C));
-        LCD_RAM(4) = (uint8_t)((LCD_RAM(4) & 0xFC) | (digit[1] & 0x03));
-        LCD_RAM(5) = (uint8_t)((LCD_RAM(5) & 0x3F) | ((digit[1] << 4) & 0xC0));
-        LCD_RAM(7) = (uint8_t)((LCD_RAM(7) & 0xCF) | ((digit[2] << 4) & 0x30));
-        LCD_RAM(9) = (uint8_t)((LCD_RAM(9) & 0xF3) | (digit[2] & 0x0C));
-        LCD_RAM(11) = (uint8_t)((LCD_RAM(11) & 0xFC) | ((digit[3] >> 2) & 0x03));
-        LCD_RAM(12) = (uint8_t)((LCD_RAM(12) & 0x3F) | ((digit[3] << 6) & 0xC0));
-        break;
-    case 4:
-        LCD_RAM(0) = (uint8_t)((LCD_RAM(0) & 0x3F) | ((digit[0] << 6) & 0xC0));
-        LCD_RAM(2) = (uint8_t)((LCD_RAM(2) & 0xFC) | ((digit[0] >> 2) & 0x03));
-        LCD_RAM(4) = (uint8_t)((LCD_RAM(4) & 0xF3) | ((digit[1] << 2) & 0x0C));
-        LCD_RAM(5) = (uint8_t)((LCD_RAM(5) & 0xCF) | ((digit[1] << 2) & 0x30));
-        LCD_RAM(7) = (uint8_t)((LCD_RAM(7) & 0x3F) | ((digit[2] << 6) & 0xC0));
-        LCD_RAM(9) = (uint8_t)((LCD_RAM(9) & 0xFC) | ((digit[2] >> 2) & 0x03));
-        LCD_RAM(11) = (uint8_t)((LCD_RAM(11) & 0xF3) | (digit[3] & 0x0C));
-        LCD_RAM(12) = (uint8_t)((LCD_RAM(12) & 0xCF) | ((digit[3] << 4) & 0x30));
-        break;
-    case 5:
-        LCD_RAM(1) = (uint8_t)((LCD_RAM(1) & 0xFC) | (digit[0] & 0x03));
-        LCD_RAM(1) = (uint8_t)((LCD_RAM(1) & 0x3F) | ((digit[0] << 4) & 0xC0));
-        LCD_RAM(4) = (uint8_t)((LCD_RAM(4) & 0xCF) | ((digit[1] << 4) & 0x30));
-        LCD_RAM(5) = (uint8_t)((LCD_RAM(5) & 0xF3) | (digit[1] & 0x0C));
-        LCD_RAM(8) = (uint8_t)((LCD_RAM(8) & 0xFE) | (digit[2] & 0x01));
-        LCD_RAM(8) = (uint8_t)((LCD_RAM(8) & 0x3F) | ((digit[2] << 4) & 0xC0));
-        LCD_RAM(11) = (uint8_t)((LCD_RAM(11) & 0xEF) | ((digit[3] << 2) & 0x10));
-        LCD_RAM(12) = (uint8_t)((LCD_RAM(12) & 0xF3) | ((digit[3] << 2) & 0x0C));
-        break;
-    case 6:
-        LCD_RAM(1) = (uint8_t)((LCD_RAM(1) & 0xF3) | ((digit[0] << 2) & 0x0C));
-        LCD_RAM(1) = (uint8_t)((LCD_RAM(1) & 0xCF) | ((digit[0] << 2) & 0x30));
-        LCD_RAM(4) = (uint8_t)((LCD_RAM(4) & 0x3F) | ((digit[1] << 6) & 0xC0));
-        LCD_RAM(5) = (uint8_t)((LCD_RAM(5) & 0xFC) | ((digit[1] >> 2) & 0x03));
-        LCD_RAM(8) = (uint8_t)((LCD_RAM(8) & 0xFB) | ((digit[2] << 2) & 0x04));
-        LCD_RAM(8) = (uint8_t)((LCD_RAM(8) & 0xCF) | ((digit[2] << 2) & 0x30));
-        LCD_RAM(11) = (uint8_t)((LCD_RAM(11) & 0xBF) | ((digit[3] << 4) & 0x40));
-        LCD_RAM(12) = (uint8_t)((LCD_RAM(12) & 0xFC) | (digit[3] & 0x03));
-        break;
-    default:
-        break;
+    m = &lcd_map[(uint8_t)((position - 1) * 8)];
+    for (i = 0; i < 8; i++, m++) {
+        uint8_t bits = (uint8_t)(LCD_RAM(m->ram) & m->keep);
+
+        if (ch & m->s0)
+            bits |= (uint8_t)m->d0;
+        if (ch & m->s1)
+            bits |= (uint8_t)m->d1;
+        LCD_RAM(m->ram) = bits;
     }
 }
 
